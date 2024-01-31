@@ -74,10 +74,10 @@ void SetGpio();					// Setup GPIO
 // Set the sampling frequency at which the DAC will be operating.
 // You may use any of the Sampling Frequencies specified below.
 // Anything else will result in the default fs of 8kHz.
-#define SAMP_FREQ	(8000)		// Default
+//#define SAMP_FREQ	(8000)		// Default
 //#define SAMP_FREQ	(9600)
 //#define SAMP_FREQ	(24000)
-//#define SAMP_FREQ	(48000)
+#define SAMP_FREQ	(48000)
 
 // The following three defines are for a test output generated using a call to the sin()
 // function.  THIS IS NOT HOW LAB 1 IS TO BE DONE!

@@ -40,6 +40,8 @@ Modified: See subversion logs.
 
 #include "template1.h"
 
+#include "lab2.h"
+
 
 // The following define is for a test output generated using a call to the sin()
 // function.  THIS IS NOT HOW LAB 1 IS TO BE DONE!
@@ -58,12 +60,7 @@ void SetGpio(void);
 //-----------------------------------------------------------------------------
 int main(void)
 {
-	int16_t sample = 0;				// Sample index into the buffer array
-	int16_t dataInput;       		// Sine Sample
-	int16_t oldDataInput;       	// Sine Sample delayed
-	float theta = 0;				// Argument of the sine wave
-	int16_t buffer[BUFF_SIZE] = {0};// Buffer to hold the sine samples
-	float amplitude = AMPLITUDE;	// Amplitude of the generated sin wave
+    uint16_t dummy;
 
    EVMOMAPL138_init();				// Initialize the board
    EVMOMAPL138_initRAM();			// Set up the RAM
@@ -83,39 +80,20 @@ int main(void)
 
 	McASP_Start();					// Start McASP
 
+	initialize_filter();            // Initialize the chosen filter.
+
 	// Infinite loop:  	Each loop reads/writes one sample to the left and right channels.
 	while (1){
 
-/* The following code is here to allow a test signal to be generated. THIS IS
-NOT HOW LAB 1 IS TO BE DONE!  Remove the code up to the indicated spot and insert
-your own code.
-*/
-
-		// Store the last sample because of the one sample delay between channels.
-		oldDataInput = dataInput;
-
-		// Calculate the next sine wave sample...
-        dataInput = ((int16_t) amplitude*sin(theta));
-			
-		// Increment the argument...
-		theta += THETA_INC;
-        if (theta > 2*PI) theta -= 2*PI;  	// Wrap around 2pi
-			
-		// Store the new sample in the buffer, for viewing...
-        buffer[sample] = dataInput;
-        sample = (sample+1)%BUFF_SIZE;      // Update the sample indx
-			
-/* Before writing the 16-bit samples, you must insert your own processing here. */
-
         // wait for xmit ready and send a sample to the left channel.
         while (!CHKBIT(MCASP->SRCTL11, XRDY)) {}
-        MCASP->XBUF11 = oldDataInput;
-//        oldDataInput = MCASP->XBUF12;	// Read the left channel input samples.
+        MCASP->XBUF11 = 0;
+        dummy = MCASP->XBUF12;	// Read the left channel input samples.
 
         // wait for xmit ready and send a sample to the right channel.
         while (!CHKBIT(MCASP->SRCTL11, XRDY)) {}
-        MCASP->XBUF11 = dataInput;
-//        dataInput = MCASP->XBUF12;	// Read the right channel input samples.
+        MCASP->XBUF11 = next_sample();
+        take_sample(MCASP->XBUF12);	// Read the right channel input samples.
             	
      }   
 }
