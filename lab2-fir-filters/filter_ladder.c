@@ -5,6 +5,8 @@
 
 #define SAMPLE_INDEX_MASK (FILTER_LENGTH - 1)
 
+extern float impulse_response[FILTER_LENGTH];   // The impulse response that this filter should have. Defined in lab2.h.
+
 static float    coefficients[FILTER_LENGTH];    // The array of filter coefficients.
 static uint16_t samples[FILTER_LENGTH];         // The array of current and previously-used samples.
 
@@ -18,6 +20,9 @@ void ladder_initialize_filter() {
     for (uint16_t i = 0; i < FILTER_LENGTH; i++) {
         samples[i] = 0;
     }
+
+    // Sets up the filter response.
+    coefficients = impulse_response;
 
 }
 
