@@ -45,7 +45,7 @@ uint16_t ladder_next_sample() {
     for (i = 0; i < FILTER_LENGTH; i++) {
 
         // Accumulates the next rung of the ladder
-        accumulator = accumulator + samples[sample_cursor] * impulse_response[i];
+        accumulator += samples[sample_cursor] * impulse_response[i];
 
         // Advances the sample cursor
         sample_cursor = (sample_cursor + 1) & SAMPLE_INDEX_MASK;
