@@ -32,6 +32,10 @@ void lattice_take_sample(uint16_t sample) {
     // A better way to do things. Marginally more elegant, but uses twice as much memory to store state information.
     float accumulator;
 
+    filter_previous_state[0] = filter_current_state[0];
+    filter_current_state[0] = sample;
+    accumulator = sample;
+
     uint16_t i;
     for (i = 1; i < FILTER_LENGTH + 1; i++) {
 
