@@ -55,10 +55,10 @@ void lattice_take_sample(uint16_t sample) {
         filter_previous_state[i] = filter_current_state[i];
 
         // Calculate this stage's new state.
-        filter_current_state[i] = lattice_coefficient[i] * accumulator + filter_previous_state[i - 1];  // g_i[n] = k_i * f_(i-1) + g_(i-1)[n-1];
+        filter_current_state[i] = lattice_coefficients[i] * accumulator + filter_previous_state[i - 1];  // g_i[n] = k_i * f_(i-1) + g_(i-1)[n-1];
 
         // Calculate the new accumulator value.
-        accumulator = accumulator + lattice_coefficient[i] * filter_previous_state[i - 1];              // f_i[n] = f_(i-1)[n] + k_i * g_(i-1)[n-1];
+        accumulator = accumulator + lattice_coefficients[i] * filter_previous_state[i - 1];              // f_i[n] = f_(i-1)[n] + k_i * g_(i-1)[n-1];
     }
 
     // Now the accumulator should have the value of the output of the lattice filter.
