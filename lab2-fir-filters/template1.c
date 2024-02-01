@@ -67,6 +67,8 @@ int main(void)
    EVMOMAPL138_enableDsp();			// Wake up the DSP
 
 
+   initialize_filter();            // Initialize the chosen filter.
+
 	// init the i2c for all to use.
 	USTIMER_init();					// General use timers
 	I2C_init(I2C0, I2C_CLK_400K);	// I2C initialization
@@ -80,20 +82,18 @@ int main(void)
 
 	McASP_Start();					// Start McASP
 
-	initialize_filter();            // Initialize the chosen filter.
-
 	// Infinite loop:  	Each loop reads/writes one sample to the left and right channels.
 	while (1){
 
         // wait for xmit ready and send a sample to the left channel.
         while (!CHKBIT(MCASP->SRCTL11, XRDY)) {}
-        MCASP->XBUF11 = 0;
-        dummy = MCASP->XBUF12;	// Read the left channel input samples.
+        MCASP->XBUF11 = next_sample();
+        take_sample(MCASP->XBUF12);	// Read the left channel input samples.
 
         // wait for xmit ready and send a sample to the right channel.
         while (!CHKBIT(MCASP->SRCTL11, XRDY)) {}
-        MCASP->XBUF11 = next_sample();
-        take_sample(MCASP->XBUF12);	// Read the right channel input samples.
+        MCASP->XBUF11 = 0;//next_sample();
+        dummy = MCASP->XBUF12;	// Read the right channel input samples.
             	
      }   
 }

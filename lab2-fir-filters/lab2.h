@@ -9,7 +9,7 @@
 #define FILTER_TYPE_LADDER  1
 #define FILTER_TYPE_LATTICE 2
 
-#define FILTER_TYPE_SELECTED FILTER_TYPE_LATTICE // Selects which filter type will be compiled for.
+#define FILTER_TYPE_SELECTED FILTER_TYPE_LADDER // Selects which filter type will be compiled for.
 
 extern float impulse_response[FILTER_LENGTH];   // The impulse response that the filter should have.
 

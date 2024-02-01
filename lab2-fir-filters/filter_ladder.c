@@ -7,8 +7,8 @@
 
 static uint16_t samples[FILTER_LENGTH];         // The array of current and previously-used samples.
 
-static uint16_t sample_index_newest;    // The index of the most recently-taken (newest) sample in samples.
-static uint16_t sample_index_oldest;    // The index of the least recently-taken (oldest) sample in samples.
+static uint16_t sample_index_newest;// = 0;    // The index of the most recently-taken (newest) sample in samples.
+static uint16_t sample_index_oldest;// = FILTER_LENGTH - 1;    // The index of the least recently-taken (oldest) sample in samples.
 
 // Initializes the filter state.
 void ladder_initialize_filter() {
