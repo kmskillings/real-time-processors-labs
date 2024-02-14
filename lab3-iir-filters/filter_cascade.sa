@@ -1,17 +1,77 @@
 							.title "filter_cascade.sa"
+							.def _filter_cascade_advance
 							.sect ".text"
 							.global _filter_cascade_advance
-_filter_cascade_advance:	.proc	A4, B4, A6, B3
-							.reg 	xn0, p_f, g, p_g
-							mv		A4, xn0		; The first argument is x[n].
-							mv		B4, p_f		; The second argument is a pointer to the filter state array.
-							mvkl	gain, p_g	; Moves the gain constant into g.
-							mvkh	gain, p_g
-							ldw		*p_g, g
-							mpysp	xn0, g, xn0	;
-							mv		xn0, A4		; Return the multiplied output by moving it into A4.
-							.endproc A4, B3
-							b		B3			; Branch back to the return register.
-							nop		5
+_filter_cascade_advance:	.proc	A4, B4, A6, B6, A8, B3
+							.reg 	x, p_d, p_a, p_b, p_g, d_old, d_new, c, y
 
-gain:						.float	0.5			; The gain of the simple filter.
+							; x is the sample that is coming into the filter on this tick.
+
+							; p_d is a pointer to the array of state values. This array takes the form:
+							; []
+
+							; p_a is a pointer to the array of feedback coefficients. This array takes the form:
+							; []
+
+							; p_b is a pointer to the array of feedforward coefficients. This array takes the form:
+							; []
+
+							; p_g is a pointer to the array of gain coefficients. This array takes the form:
+							; []
+
+							; d_old is used for state values. It can mean d[n-2] or d[n-1], depending on where
+							; the program is in its execution.
+
+							; d_new is used to calculate d[n], and is progressively built up over the course
+							; of the function execution.
+
+							; c is a coefficient, and can mean be a, b, or g coefficients depending on where the
+							; function is in its execution. It is also used as a scratchpad.
+
+							; Argument variable assignments
+							mv		A4, x		; The first argument is x[n].
+							mv		B4, p_d		; The second argument is a pointer to the filter state array.
+							mv		A6, p_a		; The third argument is a pointer to the feedback coefficient array.
+							mv		B6, p_b		; The fourth argument is a pointer to the feedforward coefficient array.
+							mv		A8, p_g		; The fifth argument is a pointer to the gain coefficient array.
+
+							; Calculate the new d[n] and y[n]
+							mvkl	0x00000000, d_new
+							mvkh	0x00000000, d_new
+							mvkl	0x00000000, y
+							mvkh	0x00000000, y 	; Clears d and y
+
+							; First phase of the filter (third terms)
+							ldw		*p_d[2], d_old ; Loads the d[n-2] state value
+							ldw		*p_a[2], c		; Loads the a2 coefficient
+							mpysp	c, d_old, c		; Finds a2*d[n-2] and stores it in c as a scratchpad.
+							subsp	d_new, c, d_new	; d[n] = -a2*d[n-2]
+							ldw		*p_b[2], c		; Loads the b2 coefficient
+							mpysp	c, d_old, c		; Finds b2*d[n-2] and stores it in c as a scratchpad.
+							addsp	y, c, y			; y[n] = b2*d[n-2]
+
+							; Second phase of the filter (second terms)
+							ldw		*p_d[1], d_old ; Loads the d[n-1] state value
+							stw		d_old, *p_d[2]	; Next time around, d[n-2] will be what d[n-1] is this time.
+							ldw		*p_a[1], c			; Loads the a1 coefficient
+							mpysp	c, d_old, c		; Finds a1*d[n-1] and stores it in c as a scratchpad.
+							subsp	d_new, c, d_new	; d[n] = -a1*d[n-1] - a2*d[n-2]
+							ldw		*p_b[1], c		; Loads the b1 coefficient
+							mpysp	c, d_old, c		; Finds b1*d[n-1] and stores it in c as a scratchpad.
+							addsp	y, c, y			; y[n] = b1*d[n-1] + b2*d[n-2]
+
+							; Third phase of the filter (first terms)
+							addsp	d_new, x, d_new	; d[n] = x[n] - a1*d[n-1] - a2*d[n-2] (final answer)
+							stw		d_new, *p_d[1]	; Next time around, d[n-1] will be what d[n] is this time.
+							ldw		*p_b[0], c		; Loads the b0 coefficient
+							mpysp	c, d_new, c		; Finds b0*d[n] and stores in it c as a scratchpad.
+							addsp	y, c, y			; y[n] = b0*d[n] + b1*d[n-1] + b2*d[n-2] (final answer)
+
+							; Final gain adjustment
+							ldw		*p_g[0], c		; Loads the g coefficient
+							mpysp	y, c, y			; Normalizes the output.
+
+							mv		y, A4
+							.endproc A4, B3
+							b		B3
+							nop		5				; Return y

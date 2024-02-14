@@ -52,12 +52,18 @@ AIC31_data_type codec_data;
 interrupt void interrupt4(void)
 {
   float yn,xn = 0.0;
-  
+
   // Get the next sample of the input.
   yn = (float)(input_left_sample()); // input from ADC
   xn = (float)(input_right_sample()); // input from ADC
 
-  xn = filter_cascade_advance(xn, NULL);
+  xn = filter_cascade_advance(
+          xn,
+          filter_state,
+          feedback_coefficients,
+          feedforward_coefficients,
+          gain_coefficients
+          );
   // xn = 0.5 * xn;
   
   // output to BOTH right and left channels...
