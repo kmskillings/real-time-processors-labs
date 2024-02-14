@@ -44,6 +44,8 @@ Modified: See subversion logs.
 
 #include "L138_aic3106_init.h"
 
+#include "filter_cascade.h"
+
 // This data structure allows for outputting to both channels.
 AIC31_data_type codec_data;
 
@@ -55,7 +57,8 @@ interrupt void interrupt4(void)
   yn = (float)(input_left_sample()); // input from ADC
   xn = (float)(input_right_sample()); // input from ADC
 
-// Insert processing code here......
+  xn = filter_cascade_advance(xn, NULL);
+  // xn = 0.5 * xn;
   
   // output to BOTH right and left channels...
   codec_data.channel[LEFT] = (uint16_t)(yn);

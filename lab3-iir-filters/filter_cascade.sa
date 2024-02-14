@@ -1,0 +1,17 @@
+							.title "filter_cascade.sa"
+							.sect ".text"
+							.global _filter_cascade_advance
+_filter_cascade_advance:	.proc	A4, B4, A6, B3
+							.reg 	xn0, p_f, g, p_g
+							mv		A4, xn0		; The first argument is x[n].
+							mv		B4, p_f		; The second argument is a pointer to the filter state array.
+							mvkl	gain, p_g	; Moves the gain constant into g.
+							mvkh	gain, p_g
+							ldw		*p_g, g
+							mpysp	xn0, g, xn0	;
+							mv		xn0, A4		; Return the multiplied output by moving it into A4.
+							.endproc A4, B3
+							b		B3			; Branch back to the return register.
+							nop		5
+
+gain:						.float	0.5			; The gain of the simple filter.
